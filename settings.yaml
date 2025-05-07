@@ -1,0 +1,14 @@
+dev:
+  DEBUG: true
+  DATABASE_URI: "mysql://root:password123@localhost:3307/eft-db"
+  TARKOV_DEV_API_URL: ""
+
+stage:
+  DEBUG: true
+  DATABASE_URI: "mysql://root:password123@localhost:3307/eft-db-stage"
+  TARKOV_DEV_API_URL: ""
+
+prod:
+  DEBUG: false
+  DATABASE_URI: "mysql://root:password123@localhost:3307/eft-db"
+  TARKOV_DEV_API_URL: ""
