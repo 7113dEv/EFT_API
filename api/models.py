@@ -1,7 +1,7 @@
 from abc import ABC
-from api import db
+from api.flask_extenstions import db
 
-class Item():
+class Item(db.Model):
     __tablename__ = "item"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
