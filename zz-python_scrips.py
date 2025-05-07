@@ -1,2 +1,6 @@
+from flask import app
+
+
 def test():
-    pass
+    with app.app_context:
+        pass
