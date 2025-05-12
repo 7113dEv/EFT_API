@@ -1,0 +1,28 @@
+
+query GetItems {
+    items {
+        id
+        name
+        shortName
+        normalizedName
+        basePrice
+        width
+        height
+        wikiLink
+        types
+        backgroundColor
+        iconLink
+        gridImageLink
+        baseImageLink
+        inspectImageLink
+        image512pxLink
+        image8xLink
+        avg24hPrice
+        lastLowPrice
+        changeLast48h
+        changeLast48hPercent
+        low24hPrice
+        high24hPrice
+        lastOfferCount
+    }
+}
