@@ -1,9 +1,7 @@
 import requests
-
 from api import settings
+from api.constants import ITEM_QUERY_NAME
 from api.graphql.helpers import load_query
-
-
 
 class BaseClient():
     def __init__(self, retry: int = 0):
@@ -27,7 +25,9 @@ class ItemClient(BaseClient):
         super().__init__(retry)
 
     def get_items(self):
-        query = load_query("api/graphql/api_queries.gql", "GetItems")
+        query = load_query("api/graphql/api_queries.gql", ITEM_QUERY_NAME)
+        print(f"Query used: {query}")
         response = self.post(query)
 
         print(response)
+

@@ -1,5 +1,5 @@
 
-query GetItems() {
+query GetItems {
     items {
         id
         name
