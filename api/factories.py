@@ -1,4 +1,4 @@
-from api.models import Item
+from api.data.models import Item
 import random
 import uuid
 
@@ -11,3 +11,4 @@ class ItemFactory():
             request_id=str(uuid.uuid4),
             name="Test Item"
         )
+    
