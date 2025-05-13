@@ -70,9 +70,6 @@ class ItemClient(BaseClient):
                     }
 
                     item = ItemSerializer(**item_data)
-                    # TODO: Save to a redis cache
-                    all_items.append(item)
-                    return all_items
                     
                 except ValidationError as ve:
                     raise ve

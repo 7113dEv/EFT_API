@@ -70,6 +70,12 @@ class ItemMarketDataSerializer(BaseModel):
                 return None
         
         return field_value
+    
+    @field_validator("change_last_48th_percent", mode="after")
+    def ensure_two_decimals(cls, field_value):
+        rounded_value = round(field_value, 2) if field_value else None
+
+        return rounded_value
 
 class ItemSerializer(BaseModel):
     uid: Optional[str] = None
@@ -105,7 +111,7 @@ class ItemSerializer(BaseModel):
     
     @field_validator("normalized_name", mode="after")
     def tranform_string(cls, field_value):
-        transformed_str = field_value.replace("-", "_")
+        transformed_str = field_value.replace("-", "_") if field_value else None
 
         return transformed_str
 
