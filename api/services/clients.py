@@ -59,6 +59,7 @@ class ItemClient(BaseClient):
                     item_data = {
                         "uid": raw_item["id"],
                         "name": raw_item["name"],
+                        "normalized_name": raw_item["normalizedName"],
                         "base_price": raw_item["basePrice"],
                         "width": raw_item["width"],
                         "height": raw_item["height"],
@@ -71,6 +72,7 @@ class ItemClient(BaseClient):
                     item = ItemSerializer(**item_data)
                     # TODO: Save to a redis cache
                     all_items.append(item)
+                    return all_items
                     
                 except ValidationError as ve:
                     raise ve

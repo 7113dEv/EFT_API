@@ -74,6 +74,7 @@ class ItemMarketDataSerializer(BaseModel):
 class ItemSerializer(BaseModel):
     uid: Optional[str] = None
     name: Optional[str] = None
+    normalized_name: Optional[str] = None
     base_price: Optional[int] = None
     width: Optional[int] = None
     height: Optional[int] = None
@@ -92,7 +93,7 @@ class ItemSerializer(BaseModel):
         
         return field_value
     
-    @field_validator("name", mode="before")
+    @field_validator("name", "normalized_name", mode="before")
     def validate_name(cls, field_value):
         if field_value:
             valid_string = validate_name_string(field_value)
@@ -101,6 +102,12 @@ class ItemSerializer(BaseModel):
                 return None
         
         return field_value
+    
+    @field_validator("normalized_name", mode="after")
+    def tranform_string(cls, field_value):
+        transformed_str = field_value.replace("-", "_")
+
+        return transformed_str
 
     @field_validator("base_price", mode="before")
     def validate_base_price(cls, field_value):
