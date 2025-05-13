@@ -1,6 +1,8 @@
+from pydantic import ValidationError
 import requests
 from api import settings
-from api.constants import ITEM_QUERY_NAME
+from api.constants import API_QUERIES_FILE_PATH, ITEM_QUERY_NAME
+from api.data.serializers import IconSerializer, ItemSerializer, ItemMarketDataSerializer
 from api.graphql.helpers import load_query
 
 class BaseClient():
@@ -25,9 +27,56 @@ class ItemClient(BaseClient):
         super().__init__(retry)
 
     def get_items(self):
-        query = load_query("api/graphql/api_queries.gql", ITEM_QUERY_NAME)
-        print(f"Query used: {query}")
-        response = self.post(query)
+        all_items = []
 
-        print(response)
+        try:
+            query = load_query(API_QUERIES_FILE_PATH, ITEM_QUERY_NAME)
+            response = self.post(query)
 
+            response_data = response["data"]
+            for raw_item in response_data["items"]:
+                try:
+                    icon_data = {
+                        "background_color": raw_item["backgroundColor"],
+                        "icon_link": raw_item["iconLink"],
+                        "grid_image_link": raw_item["gridImageLink"],
+                        "base_image_link": raw_item["baseImageLink"],
+                        "inspect_image_link": raw_item["inspectImageLink"],
+                        "image_512_px_link": raw_item["image512pxLink"],
+                        "image_8x_link": raw_item["image8xLink"],
+                    }
+
+                    market_data = {
+                        "avg_24h_price": raw_item["avg24hPrice"],
+                        "last_low_price": raw_item["lastLowPrice"],
+                        "change_last_48h": raw_item["changeLast48h"],
+                        "change_last_48th_percent": raw_item["changeLast48hPercent"],
+                        "low_24h_price": raw_item["low24hPrice"],
+                        "high_24h_price": raw_item["high24hPrice"],
+                        "last_offer_count": raw_item["lastOfferCount"],
+                    }
+
+                    item_data = {
+                        "uid": raw_item["id"],
+                        "name": raw_item["name"],
+                        "base_price": raw_item["basePrice"],
+                        "width": raw_item["width"],
+                        "height": raw_item["height"],
+                        "wiki_link": raw_item["wikiLink"],
+                        "types": raw_item["types"],
+                        "image_data": icon_data,
+                        "market_data": market_data,
+                    }
+
+                    item = ItemSerializer(**item_data)
+                    # TODO: Save to a redis cache
+                    all_items.append(item)
+                    
+                except ValidationError as ve:
+                    raise ve
+                except Exception as e:
+                    raise e       
+        except Exception as e:
+            print(f"Exception during get items request: {e}")
+
+        return all_items
