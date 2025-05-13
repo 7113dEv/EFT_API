@@ -9,7 +9,7 @@ config = load_config().get(current_env, {})
 DEBUG = config.get("DEBUG", False)
 
 # DB Constants
-DATABASE_URI = config.get("DATABASE_URI", "mysql://root:password123@localhost:3307/eft-db")
+DATABASE_URI = config.get("DATABASE_URI", "")
 
 # API Constants
 TARKOV_DEV_API_URL = config.get("TARKOV_DEV_API_URL", "")
