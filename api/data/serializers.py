@@ -1,19 +1,32 @@
-from typing import List
-from pydantic import BaseModel, HttpUrl, field_validator
+from typing import List, Optional
+from pydantic import BaseModel, HttpUrl, ValidationError, field_validator
+
+from api.data.validation_helpers import (
+    is_negative, 
+    validate_asset_url_string, 
+    validate_name_string, 
+    validate_uid_string, 
+    validate_wiki_url_string
+    )
 
 class IconSerializer(BaseModel):
-    background_color: str
-    icon_link: HttpUrl
-    grid_image_link: HttpUrl
-    base_image_link: HttpUrl
-    inspect_image_link: HttpUrl
-    image_512_px_link: HttpUrl
-    image_8x_link: HttpUrl
+    background_color: Optional[str] = None
+    icon_link: Optional[HttpUrl] = None
+    grid_image_link: Optional[HttpUrl] = None
+    base_image_link: Optional[HttpUrl] = None
+    inspect_image_link: Optional[HttpUrl] = None
+    image_512_px_link: Optional[HttpUrl] = None
+    image_8x_link: Optional[HttpUrl] = None
 
     @field_validator("background_color", mode="before")
-    def validate_background_color(self, v):
-        # Add validation logic here
-        return v
+    def validate_background_color(cls, field_value):
+        if field_value:
+            valid_string = validate_name_string(field_value)
+            if not valid_string:
+                # raise ValueError(f"String {field_value} does not match regex pattern.")
+                return None
+        
+        return field_value
 
     @field_validator(
             "icon_link", 
@@ -24,68 +37,106 @@ class IconSerializer(BaseModel):
             "image_8x_link", 
             mode="before"
         )
-    def validate_urls(self, v):
-        # Add validation logic for URLs here
-        return v
+    def validate_urls(cls, field_value):
+        if field_value:
+            valid_string = validate_asset_url_string(field_value)
+            if not valid_string:
+                # raise ValueError(f"{field_value} does not match regex pattern.")
+                return None
+        
+        return field_value
 
 class ItemMarketDataSerializer(BaseModel):
-    avg_24h_price: int
-    last_low_price: int
-    change_last_48h: float
-    change_last_48th_percent: float
-    low_24h_price: int
-    high_24h_price: int
-    last_offer_count: int
+    avg_24h_price: Optional[int] = None
+    last_low_price: Optional[int] = None
+    change_last_48h: Optional[float] = None
+    change_last_48th_percent: Optional[float] = None
+    low_24h_price: Optional[int] = None
+    high_24h_price: Optional[int] = None
+    last_offer_count: Optional[int] = None
 
-    @field_validator("avg_24h_price", "last_low_price", "low_24h_price", "high_24h_price", "last_offer_count", mode="before")
-    def validate_prices(self, v):
-        # Example: ensure prices are not negative
-        return v
-
-    @field_validator("change_last_48h", "change_last_48th_percent", mode="before")
-    def validate_changes(self, v):
-        # Add float value validations if needed
-        return v
+    @field_validator(
+            "avg_24h_price", 
+            "last_low_price",
+            "low_24h_price", 
+            "high_24h_price", 
+            "last_offer_count", 
+            mode="before"
+        )
+    def validate_prices(cls, field_value):
+        if field_value:
+            if is_negative(field_value):
+                # raise ValueError(f"Improper number value used: {field_value}.")
+                return None
+        
+        return field_value
 
 class ItemSerializer(BaseModel):
-    uid: str
-    name: str
-    base_price: str
-    width: int
-    height: int
-    image_data: IconSerializer
-    wiki_link: str
-    types: List[str]
+    uid: Optional[str] = None
+    name: Optional[str] = None
+    base_price: Optional[int] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
+    wiki_link: Optional[str] = None
+    types: Optional[List[str]] = None
     market_data: ItemMarketDataSerializer
     image_data: IconSerializer
 
     @field_validator("uid", mode="before")
-    def validate_uid(cls, v):
-        # Check UUID format or custom ID pattern
-        return v
-
+    def validate_uid(cls, field_value):
+        if field_value:
+            valid_string = validate_uid_string(field_value)
+            if not valid_string:
+                # raise ValueError(f"{field_value} does not match regex pattern.")
+                return None
+        
+        return field_value
+    
     @field_validator("name", mode="before")
-    def validate_name(cls, v):
-        # Strip and check for length or invalid chars
-        return v
+    def validate_name(cls, field_value):
+        if field_value:
+            valid_string = validate_name_string(field_value)
+            if not valid_string:
+                # raise ValueError(f"String {field_value} does not match regex pattern.")
+                return None
+        
+        return field_value
 
     @field_validator("base_price", mode="before")
-    def validate_base_price(cls, v):
-        # Example: make sure it's numeric string
-        return v
+    def validate_base_price(cls, field_value):
+        if field_value:
+            if is_negative(field_value):
+                # raise ValueError(f"Improper number value used: {field_value}.")
+                return None
+        
+        return field_value
 
     @field_validator("width", "height", mode="before")
-    def validate_dimensions(cls, v):
-        # Ensure dimensions are positive
-        return v
+    def validate_dimensions(cls, field_value):
+        if field_value:
+            if is_negative(field_value):
+                # raise ValueError(f"Improper number value used: {field_value}.")
+                return None
+        
+        return field_value
 
     @field_validator("wiki_link", mode="before")
-    def validate_wiki_link(cls, v):
-        # Optional: validate URL format if not using HttpUrl
-        return v
+    def validate_wiki_link(cls, field_value):
+        if field_value:
+            valid_string = validate_wiki_url_string(field_value)
+            if not valid_string:
+                # raise ValueError(f"{field_value} does not match regex pattern.")
+                return None
+                
+        
+        return field_value
 
     @field_validator("types", mode="before")
-    def validate_types(cls, v):
-        # Ensure list is not empty, all items are strings
-        return v
+    def validate_types(cls, field_value):
+        if field_value:
+            if len(field_value) < 1:
+                # raise ValueError(f"Item types are not a list or the list is empty.")
+                return None
+            
+        return field_value
     
