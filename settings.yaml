@@ -2,13 +2,16 @@ dev:
   DEBUG: true
   DATABASE_URI: "mysql://root:password123@localhost:3307/eft-db"
   TARKOV_DEV_API_URL: "https://api.tarkov.dev/graphql"
+  REDIS_URL: "redis://:password123@localhost:6379/0"
 
 stage:
   DEBUG: true
   DATABASE_URI: "mysql://root:password123@localhost:3307/eft-db-stage"
   TARKOV_DEV_API_URL: "https://api.tarkov.dev/graphql"
+  REDIS_URL: "redis://:password123@localhost:6379/0"
 
 prod:
   DEBUG: false
   DATABASE_URI: "mysql://root:password123@localhost:3307/eft-db"
   TARKOV_DEV_API_URL: "https://api.tarkov.dev/graphql"
+  REDIS_URL: "redis://:password123@localhost:6379/0"

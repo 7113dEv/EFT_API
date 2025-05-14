@@ -1,4 +1,4 @@
-from api.flask_extenstions import db
+from api.extensions import db
 
 # TODO: Update Item object to reflect API data
 class Item(db.Model):
