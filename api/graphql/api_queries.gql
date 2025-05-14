@@ -3,7 +3,6 @@ query GetItems {
     items {
         id
         name
-        shortName
         normalizedName
         basePrice
         width
