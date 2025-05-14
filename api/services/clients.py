@@ -4,8 +4,9 @@ from api import settings
 from api.constants import API_QUERIES_FILE_PATH, ITEM_QUERY_NAME
 from api.data.serializers import IconSerializer, ItemSerializer, ItemMarketDataSerializer
 from api.graphql.helpers import load_query
+from api.redis.clients import RedisClient
 
-class BaseClient():
+class BaseAPIClient():
     def __init__(self, retry: int = 0):
         self.retry = retry
 
@@ -22,7 +23,7 @@ class BaseClient():
         return response.json()
 
 
-class ItemClient(BaseClient):
+class ItemClient(BaseAPIClient):
     def __init__(self, retry: int = 0):
         super().__init__(retry)
 
@@ -30,6 +31,7 @@ class ItemClient(BaseClient):
         all_items = []
 
         try:
+            redis_client = RedisClient()
             query = load_query(API_QUERIES_FILE_PATH, ITEM_QUERY_NAME)
             response = self.post(query)
 
@@ -69,7 +71,11 @@ class ItemClient(BaseClient):
                         "market_data": market_data,
                     }
 
+                    # Serialize / validate data before moving on
                     item = ItemSerializer(**item_data)
+
+                    redis_client.set_value(f"{item.normalized_name}", item.model_dump_json())
+
                     
                 except ValidationError as ve:
                     raise ve

@@ -4,4 +4,6 @@ from api.services.clients import ItemClient
 client = ItemClient()
 
 test = client.get_items()
-print(test)
+
+from api.redis.clients import RedisClient
+r_c = RedisClient()
