@@ -4,7 +4,7 @@
   - Create custom exceptions
   - Implement exponential backoff strategy
   - Update DB models
-  - Implement redis caching [x]
+  - [x] Implement redis caching
   - Link discord bot
 
 ## Test
