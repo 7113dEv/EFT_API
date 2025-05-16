@@ -5,6 +5,7 @@ from api.constants import API_QUERIES_FILE_PATH, ITEM_QUERY_NAME
 from api.data.serializers import IconSerializer, ItemSerializer, ItemMarketDataSerializer
 from api.graphql.helpers import load_query
 from api.redis.clients import RedisClient
+from api.redis.helpers import add_to_redis
 
 class BaseAPIClient():
     def __init__(self, retry: int = 0):
@@ -59,7 +60,7 @@ class ItemClient(BaseAPIClient):
                     }
 
                     item_data = {
-                        "uid": raw_item["id"],
+                        "bsgid": raw_item["id"],
                         "name": raw_item["name"],
                         "normalized_name": raw_item["normalizedName"],
                         "base_price": raw_item["basePrice"],
@@ -73,9 +74,11 @@ class ItemClient(BaseAPIClient):
 
                     # Serialize / validate data before moving on
                     item = ItemSerializer(**item_data)
+                    item_n_name = item.normalized_name
 
-                    redis_client.set_value(f"{item.normalized_name}", item.model_dump_json())
-
+                    # TODO: Move to periodic celery task
+                    if not redis_client.key_exists(item_n_name):
+                        add_to_redis(item_n_name, item, redis_client=redis_client)
                     
                 except ValidationError as ve:
                     raise ve

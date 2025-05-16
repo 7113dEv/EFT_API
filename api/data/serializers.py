@@ -9,7 +9,16 @@ from api.data.validation_helpers import (
     validate_wiki_url_string
     )
 
-class IconSerializer(BaseModel):
+class BaseSerializer:
+    # class Config:
+    #     orm_mode = True
+
+    model_config = {
+      "from_attributes": True,
+      "json_encoders": { HttpUrl: lambda u: str(u) }
+    }
+
+class IconSerializer(BaseModel, BaseSerializer):
     background_color: Optional[str] = None
     icon_link: Optional[HttpUrl] = None
     grid_image_link: Optional[HttpUrl] = None
@@ -17,6 +26,7 @@ class IconSerializer(BaseModel):
     inspect_image_link: Optional[HttpUrl] = None
     image_512_px_link: Optional[HttpUrl] = None
     image_8x_link: Optional[HttpUrl] = None
+
 
     @field_validator("background_color", mode="before")
     def validate_background_color(cls, field_value):
@@ -46,7 +56,7 @@ class IconSerializer(BaseModel):
         
         return field_value
 
-class ItemMarketDataSerializer(BaseModel):
+class ItemMarketDataSerializer(BaseModel, BaseSerializer):
     avg_24h_price: Optional[int] = None
     last_low_price: Optional[int] = None
     change_last_48h: Optional[float] = None
@@ -77,8 +87,8 @@ class ItemMarketDataSerializer(BaseModel):
 
         return rounded_value
 
-class ItemSerializer(BaseModel):
-    uid: Optional[str] = None
+class ItemSerializer(BaseModel, BaseSerializer):
+    bsgid: Optional[str] = None
     name: Optional[str] = None
     normalized_name: Optional[str] = None
     base_price: Optional[int] = None
