@@ -12,8 +12,8 @@ class Item(db.Model):
     height = db.Column(db.Integer, nullable=False)
     wiki_link = db.Column(db.String(512), nullable=True)
     types = db.Column(db.JSON, nullable=False)  
-    market_data = db.relationship("market_data", back_populates="item", cascade="all, delete-orphan")
-    icon_data = db.relationship("icon_data", back_populates="item", cascade="all, delete-orphan")
+    market_data = db.relationship("MarketData", back_populates="item", uselist=False, cascade="all, delete-orphan")
+    icon_data = db.relationship("IconData", back_populates="item", uselist=False, cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
@@ -25,15 +25,16 @@ class Item(db.Model):
             "basePrice": self.base_price,
             "width": self.width,
             "height": self.height,
-            "market_data": self.market_data.to_dict(),
-            "icon_data": self.icon_data.to_dict()
+            "market_data": self.market_data.to_dict() if self.market_data else None,
+            "icon_data": self.icon_data.to_dict() if self.icon_data else None,
         }
     
 class MarketData(db.Model):
     __tablename__ = "market_data"
 
-    id = db.Column(db.Integer,primary_key=True, autoincrement=True)
-    item = db.relationship("item", back_populates="market_data")
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    item_id = db.Column(db.Integer, db.ForeignKey("item.id"), unique=True, nullable=False)
+    item = db.relationship("Item", back_populates="market_data")
     avg_24h_price = db.Column(db.Integer, nullable=True)
     last_low_price = db.Column(db.Integer, nullable=True)
     change_last_48h = db.Column(db.Float, nullable=True)
@@ -57,6 +58,7 @@ class IconData(db.Model):
     __tablename__ = "icon_data"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    item_id = db.Column(db.Integer, db.ForeignKey("item.id"), unique=True, nullable=False)
     item = db.relationship("Item", back_populates="icon_data")
     background_color = db.Column(db.String(32),  nullable=True)
     icon_link = db.Column(db.String(512), nullable=True)

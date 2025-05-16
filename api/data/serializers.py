@@ -1,6 +1,7 @@
 from typing import List, Optional
 from pydantic import BaseModel, HttpUrl, ValidationError, field_validator
 
+from api.data.models import IconData, Item, MarketData
 from api.data.validation_helpers import (
     is_negative, 
     validate_asset_url_string, 
@@ -10,14 +11,19 @@ from api.data.validation_helpers import (
     )
 
 class BaseSerializer:
-    # class Config:
-    #     orm_mode = True
 
     model_config = {
       "from_attributes": True,
-      "json_encoders": { HttpUrl: lambda u: str(u) }
+      "json_encoders": { HttpUrl: lambda u: str(u) },
+      "from_attributes": True
     }
 
+    @classmethod
+    def from_orm_model():
+        raise NotImplementedError
+
+    def to_orm_model():
+        raise NotImplementedError
 class IconSerializer(BaseModel, BaseSerializer):
     background_color: Optional[str] = None
     icon_link: Optional[HttpUrl] = None
@@ -99,7 +105,7 @@ class ItemSerializer(BaseModel, BaseSerializer):
     market_data: ItemMarketDataSerializer
     image_data: IconSerializer
 
-    @field_validator("uid", mode="before")
+    @field_validator("bsgid", mode="before")
     def validate_uid(cls, field_value):
         if field_value:
             valid_string = validate_uid_string(field_value)
@@ -162,4 +168,33 @@ class ItemSerializer(BaseModel, BaseSerializer):
                 return None
             
         return field_value
+    
+    @classmethod
+    def from_orm_model(cls, item: Item) -> "ItemSerializer":
+        return cls(
+            bsgid=item.bsgid,
+            name=item.name,
+            normalized_name=item.normalized_name,
+            base_price=item.base_price,
+            width=item.width,
+            height=item.height,
+            wiki_link=item.wiki_link,
+            types=item.types,
+            market_data=ItemMarketDataSerializer.model_validate(item.market_data),
+            image_data=IconSerializer.model_validate(item.icon_data),
+        )
+
+    def to_orm_model(self) -> Item:
+        return Item(
+            bsgid=self.bsgid,
+            name=self.name,
+            normalized_name=self.normalized_name,
+            base_price=self.base_price,
+            width=self.width,
+            height=self.height,
+            wiki_link=self.wiki_link,
+            types=self.types,
+            market_data=MarketData(**self.market_data.model_dump()),
+            icon_data=IconData(**self.image_data.model_dump())
+        )
     
