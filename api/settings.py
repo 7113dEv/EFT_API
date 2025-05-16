@@ -1,5 +1,4 @@
 import os
-import redis
 
 from config_loader import load_config
 
@@ -16,4 +15,4 @@ DATABASE_URI = config.get("DATABASE_URI", "")
 TARKOV_DEV_API_URL = config.get("TARKOV_DEV_API_URL", "")
 
 # Redis
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL = config.get("REDIS_URL", os.getenv("REDIS_URL", "redis://:password123@localhost:6379/0"))

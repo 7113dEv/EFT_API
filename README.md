@@ -7,5 +7,7 @@
   - Update DB models
   - [x] Implement redis caching
   - Link discord bot
+  - Implement Celery
+  - Create periodic tasks
 
 ## Test
