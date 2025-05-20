@@ -1,3 +1,5 @@
+from typing import List
+from api.extensions import db
 from pydantic import ValidationError
 import requests
 from api import settings
@@ -28,7 +30,7 @@ class ItemClient(BaseAPIClient):
     def __init__(self, retry: int = 0):
         super().__init__(retry)
 
-    def get_items(self):
+    def get_items(self, cache_data: bool = False, save_data: bool = False) -> List[ItemSerializer]:
         all_items = []
 
         try:
@@ -76,9 +78,16 @@ class ItemClient(BaseAPIClient):
                     item = ItemSerializer(**item_data)
                     item_n_name = item.normalized_name
 
-                    # TODO: Move to periodic celery task
-                    if not redis_client.key_exists(item_n_name):
+                    # TODO: Deconstruct ItemSerializer data
+                    if cache_data and not redis_client.key_exists(item_n_name):
                         add_to_redis(item_n_name, item, redis_client=redis_client)
+
+                    if save_data:
+                        db_model = item.to_orm_model()
+                        db.session.add(db_model)
+                        db.session.commit()
+
+                    all_items.append(item)
                     
                 except ValidationError as ve:
                     raise ve
@@ -88,3 +97,4 @@ class ItemClient(BaseAPIClient):
             print(f"Exception during get items request: {e}")
 
         return all_items
+
